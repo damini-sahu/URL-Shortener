@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style.css" />
+  <!-- ZMDI Material Design Iconic Font CDN -->
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/material-design-iconic-font@2.2.0/dist/css/material-design-iconic-font.min.css" />
+  <title>URL Shortener</title>
+</head>
+
+<body>
+  <%- include('./partials/header.ejs') %>
+
+    <div class="main">
+      <section class="url-shortener">
+        <div class="container">
+          <div class="shortener-content">
+            <div class="user-status">
+              <% if(user) { %>
+                <div class="status-badge success">
+                  <i class="zmdi zmdi-check-circle"></i>
+                  <span>You are logged in</span>
+                </div>
+                <% } else { %>
+                  <div class="status-badge warning">
+                    <i class="zmdi zmdi-alert-circle"></i>
+                    <span>You are not logged in</span>
+                  </div>
+                  <% } %>
+            </div>
+
+            <div class="shortener-form">
+              <h1 class="form-title">URL Shortener</h1>
+              <form action="/" method="post" class="url-form" id="url-form">
+                <div class="form-group">
+                  <label for="url">
+                    <i class="zmdi zmdi-link"></i>
+                  </label>
+                  <input type="url" name="url" id="url" placeholder="Enter URL" required />
+                </div>
+                <div class="form-group">
+                  <label for="shortCode">
+                    <i class="zmdi zmdi-code"></i>
+                  </label>
+                  <input type="text" name="shortCode" id="shortCode" placeholder="Enter custom short code" required />
+                </div>
+
+                <% if ((errors && errors.length> 0)) { %> <% errors.forEach((error)=> { %>
+                    <p class="flash-error">
+                      <%= error %>
+                    </p>
+                    <% }); %>
+                      <% } %>
+
+                        <div class="form-group form-button">
+                          <input type="submit" name="shorten" id="shorten" class="form-submit" value="Shorten" />
+                        </div>
+              </form>
+            </div>
+
+            <div class="shortened-urls">
+              <h2 class="section-title">Shortened URLs</h2>
+              <% if(links && links.length> 0) { %>
+                <ul class="url-list">
+                  <% links.forEach(function(link) { const shortCode=link.shortCode; const url=link.url; const
+                    id=link.id; const truncatedUrl=url.length>= 30 ? url.slice(0,30) + '...' : url;
+                    %>
+                    <li class="url-item">
+                      <div class="url-info">
+                        <a href="/<%= shortCode %>" class="short-url" target="_blank">
+                          <i class="zmdi zmdi-link"></i>
+                          <%= host %>/<%= shortCode %>
+                        </a>
+                        <span class="original-url">
+                          <%= truncatedUrl %>
+                        </span>
+                      </div>
+                      <div class="url-actions">
+                        <button class="copy-btn" data-url="<%= host %>/<%= shortCode %>">
+                          <i class="zmdi zmdi-copy"></i>
+                        </button>
+                        <button class="copy-btn edit-btn">
+                          <a href="/edit/<%= id %>">
+                            <i class="zmdi zmdi-edit"></i>
+                          </a>
+                        </button>
+                        <!-- delete vale m form tag use karna compulsory hai -->
+                        <form action="/delete/<%= id %>" method="post">
+                          <button class="copy-btn edit-btn">
+                            <i class="zmdi zmdi-delete"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </li>
+                    <% }); %>
+                </ul>
+                <% } else { %>
+                  <p class="empty-list">
+                    No shortened URLs yet. Create your first one above!
+                  </p>
+                  <% } %>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Pagination -->
+    <% if (totalPages> 1) { %>
+      <div class="pagination">
+        <%# Previous page link %>
+          <% if (currentPage> 1) { %>
+            <a href="?page=<%= currentPage - 1 %>" class="page-link">&laquo; Previous</a>
+            <% } else { %>
+              <span class="page-link disabled">&laquo; Previous</span>
+              <% } %>
+
+                <%# Page numbers %>
+                  <% // Calculate the range of page numbers to display
+                   let startPage = Math.max(1, currentPage - 2); 
+                  let endPage = Math.min(totalPages, currentPage + 2); 
+
+                  // Ensure 5 pages are shown if possible 
+                    while (endPage - startPage < 4 && startPage> 1) {
+                    startPage--;
+                    }
+                    while (endPage - startPage < 4 && endPage < totalPages) { endPage++; } %>
+
+                      <% // Always show first page 
+                      if (startPage> 1) { %>
+                        <a href="?page=1" class="page-link">1</a>
+                        <% if (startPage> 2) { %>
+                          <span class="ellipsis">...</span>
+                          <% } %>
+                            <% } %>
+
+                              <%# Show page numbers around current page %>
+                                <% for (let i=startPage; i <=endPage; i++) { %>
+                                  <% if (i===currentPage) { %>
+                                    <span class="page-link current">
+                                      <%= i %>
+                                    </span>
+                                    <% } else { %>
+                                      <a href="?page=<%= i %>" class="page-link">
+                                        <%= i %>
+                                      </a>
+                                      <% } %>
+                                        <% } %>
+
+                                          <%# Always show last page %>
+                                            <% if (endPage < totalPages) { %>
+                                              <% if (endPage < totalPages - 1) { %>
+                                                <span class="ellipsis">...</span>
+                                                <% } %>
+                                                  <a href="?page=<%= totalPages %>" class="page-link">
+                                                    <%= totalPages %>
+                                                  </a>
+                                                  <% } %>
+
+
+                                                    <!-- <span class="page-link">&laquo; <%= currentPage %> </span> -->
+
+                                                    <%# Next page link %>
+                                                      <% if (currentPage < totalPages) { %>
+                                                        <a href="?page=<%= currentPage + 1 %>" class="page-link">Next
+                                                          &raquo;</a>
+                                                        <% } else { %>
+                                                          <span class="page-link disabled">Next &raquo;</span>
+                                                          <% } %>
+      </div>
+      <% } %>
+
+        <%- include('./partials/footer.ejs') %>
+
+          <script>
+            // Simple copy to clipboard functionality
+            document.addEventListener("DOMContentLoaded", function () {
+              const copyButtons = document.querySelectorAll(".copy-btn");
+
+              copyButtons.forEach((button) => {
+                button.addEventListener("click", function () {
+                  const url = this.getAttribute("data-url");
+                  navigator.clipboard.writeText(url).then(() => {
+                    // Visual feedback
+                    this.innerHTML = '<i class="zmdi zmdi-check"></i>';
+                    setTimeout(() => {
+                      this.innerHTML = '<i class="zmdi zmdi-copy"></i>';
+                    }, 2000);
+                  });
+                });
+              });
+            });
+          </script>
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1753174299687,
+      "tag": "0000_safe_gunslinger",
+      "breakpoints": true
+    }
+  ]
+}
